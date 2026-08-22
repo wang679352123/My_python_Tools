@@ -1,27 +1,30 @@
 import requests
 from urllib.parse import urlparse
 import threading
-
-
-
+path_url = (".mp3",".m4a",".wav",".flac",".aac",".ogg")
 
 class DownloadMypackage:
     def __init__(self, name, url):
         self.name = name
         self.url = url
         self.info = []
-        self.is_exiting = False
+        self.is_exiting = True
     def should_exit(self):
             return self.is_exiting
     @staticmethod
     def is_url(url):
         res = urlparse(url)
-        return all((res.scheme,res.netloc))
-
+        if not(res.scheme in ["http","https"] and res.netloc):
+            return False
+        path = res.path.lower()
+        if path.endwith(path_url):
+            return True
+        return False
+        
     def add_url(self):
-        while not self.should_exit():
+        while self.should_exit():
             try:
-                music_name = input("请输入下载的音乐名称 输入q 退出:")
+                music_name = input("请输入音乐名称 输入q 退出:")
                 if music_name.lower() =="q":
                     break
                 music_url = input("请输入下载的音乐链接:")
@@ -36,13 +39,13 @@ class DownloadMypackage:
             except Exception as ex:
                 print(f"输入错误:{ex}")
                 return
-            if  self.should_exit():
+            if not self.should_exit():
                 break
     def download(self,name,url):
         try:
             response = requests.get(url)
             if response.status_code == 200:
-                with open(name + ".mp3","wb") as f:
+                with open(name + ".mp3".lower(),"wb") as f:
                     f.write(response.content)
         except Exception as ex:
             print(f"{self.name}下载失败:{ex}")
